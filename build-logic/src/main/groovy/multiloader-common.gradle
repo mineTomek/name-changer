@@ -60,12 +60,6 @@ base {
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(java_version)
     withSourcesJar()
-    withJavadocJar()
-}
-
-tasks.withType(Javadoc).configureEach {
-    failOnError false
-    options.addStringOption('Xdoclint:-missing', '-quiet')
 }
 
 repositories {
