@@ -1,0 +1,68 @@
+plugins {
+    id 'multiloader-loader'
+    alias libs.plugins.fabricLoom
+    alias libs.plugins.modrinthMinotaur
+}
+
+dependencies {
+    minecraft libs.minecraft
+    implementation libs.fabricLoader
+    implementation libs.fabricApi
+}
+
+apply from: rootProject.file('repositories.gradle')
+apply from: 'dependencies.gradle'
+
+loom {
+    def aw = project(":common").file("src/main/resources/${mod_id}.classtweaker")
+    if (aw.exists()) {
+        accessWidenerPath.set(aw)
+    }
+
+    mixin {
+        defaultRefmapName.set("${mod_id}.refmap.json")
+    }
+
+    runs {
+        client {
+            client()
+            setConfigName("Fabric Client")
+            ideConfigGenerated(true)
+            runDir("run/client")
+        }
+        server {
+            server()
+            setConfigName("Fabric Server")
+            ideConfigGenerated(true)
+            runDir("run/server")
+        }
+        data {
+            inherit client
+            setConfigName("Fabric Data")
+            ideConfigGenerated(true)
+            runDir("build/datagen")
+
+            vmArg "-Dfabric-api.datagen"
+            vmArg "-Dfabric-api.datagen.output-dir=${project(":common").file("src/generated/resources")}"
+            vmArg "-Dfabric-api.datagen.modid=${mod_id}"
+        }
+    }
+}
+
+modrinth {
+    token = project.findProperty("modrinth.token") ?: System.getenv("MODRINTH_TOKEN") ?: "none"
+    projectId = findProperty("modrinth_project_id")
+    versionType = "release"
+    versionNumber = project.version + "+fabric-" + libs.minecraft.get().version
+    uploadFile = jar
+    def changelogFile = rootProject.file("CHANGELOG.md")
+    if (changelogFile.exists()) {
+        changelog = changelogFile.text
+    }
+    gameVersions = [libs.minecraft.get().version]
+    loaders = ['fabric']
+    dependencies {
+        required.project "fabric-api"
+        required.project "balm"
+    }
+}

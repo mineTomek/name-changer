@@ -1,0 +1,59 @@
+plugins {
+    id 'multiloader-loader'
+    alias libs.plugins.modDevGradle
+    alias libs.plugins.modrinthMinotaur
+}
+
+neoForge {
+    version = libs.neoForge.get().version
+    // Automatically enable neoforge AccessTransformers if the file exists
+    def at = project(':common').file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
+
+    parchment.parchmentArtifact = libs.parchment.get().toString()
+
+    runs {
+        configureEach {
+            systemProperty('neoforge.enabledGameTestNamespaces', mod_id)
+            ideName = "NeoForge ${it.name.capitalize()} (${project.path})"
+        }
+
+        client {
+            client()
+        }
+
+        server {
+            server()
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+apply from: rootProject.file('repositories.gradle')
+apply from: 'dependencies.gradle'
+
+modrinth {
+    token = project.findProperty("modrinth.token") ?: System.getenv("MODRINTH_TOKEN") ?: "none"
+    projectId = findProperty("modrinth_project_id")
+    versionType = "release"
+    versionNumber = project.version + "+neoforge-" + libs.minecraft.get().version
+    uploadFile = jar
+    def changelogFile = rootProject.file("CHANGELOG.md")
+    if (changelogFile.exists()) {
+        changelog = changelogFile.text
+    }
+    gameVersions = [libs.minecraft.get().version]
+    loaders = ['neoforge']
+    dependencies {
+        required.project "balm"
+    }
+}
