@@ -38,24 +38,24 @@ public class NameChangeCommand {
     }
 
     private static int set(ServerPlayer player, Component name, CommandContext<CommandSourceStack> context) {
-        Component originalName = player.getDisplayName();
+        Component originalName = player.getName();
 
         player.setCustomName(name);
 
         NameChanger.updateServerMotd(player);
 
-        context.getSource().sendSuccess(() -> Component.translatable("commands.name.set.success", originalName, player.getDisplayName()), true);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.name.set.success", originalName, player.getName()), true);
 
         return 1;
     }
 
     private static int reset(ServerPlayer player, CommandContext<CommandSourceStack> context) {
-        Component originalName = player.getDisplayName();
+        Component originalName = player.getName();
 
         player.setCustomName(null);
         NameChanger.updateServerMotd(player);
 
-        context.getSource().sendSuccess(() -> Component.translatable("commands.name.reset.success", originalName, player.getDisplayName()), true);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.name.reset.success", originalName, player.getName()), true);
 
         return 1;
     }
