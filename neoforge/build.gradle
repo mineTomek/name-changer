@@ -47,7 +47,7 @@ modrinth {
     versionType = "release"
     versionNumber = project.version + "+neoforge-" + libs.minecraft.get().version
     uploadFile = jar
-    def changelogFile = rootProject.file("CHANGELOG.md")
+    def changelogFile = rootProject.file("CHANGELOG_LATEST.md")
     if (changelogFile.exists()) {
         changelog = changelogFile.text
     }
