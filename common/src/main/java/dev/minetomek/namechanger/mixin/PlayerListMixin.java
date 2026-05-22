@@ -29,12 +29,16 @@ public abstract class PlayerListMixin {
 
     @Overwrite
     public @Nullable ServerPlayer getPlayerByName(final String name) {
+        // Match custom name first
         for (ServerPlayer serverPlayer : players) {
-            if (serverPlayer.getGameProfile().name().equalsIgnoreCase(name)) {
+            if (serverPlayer.getName().getString().equalsIgnoreCase(name)) {
                 return serverPlayer;
             }
+        }
 
-            if (serverPlayer.getName().getString().equalsIgnoreCase(name)) {
+        // Then try finding by original name
+        for (ServerPlayer serverPlayer : players) {
+            if (serverPlayer.getGameProfile().name().equalsIgnoreCase(name)) {
                 return serverPlayer;
             }
         }
