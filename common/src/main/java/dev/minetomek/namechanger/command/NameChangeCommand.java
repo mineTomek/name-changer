@@ -2,6 +2,8 @@ package dev.minetomek.namechanger.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.Dynamic3CommandExceptionType;
 import dev.minetomek.namechanger.NameChanger;
 import dev.minetomek.namechanger.NameChangerConfig;
 import dev.minetomek.namechanger.name.NameConflict;
@@ -23,6 +25,21 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class NameChangeCommand {
+    private static final Dynamic3CommandExceptionType ERROR_NAME_CONFLICT_ORIGINAL = new Dynamic3CommandExceptionType(
+            (originalName, playerProfileName, playerCustomName) ->
+                    Component.translatable(
+                            "commands.name.set.failed.conflict.original",
+                            originalName,
+                            playerProfileName,
+                            playerCustomName));
+    private static final Dynamic3CommandExceptionType ERROR_NAME_CONFLICT_CUSTOM = new Dynamic3CommandExceptionType(
+            (playerProfileName, playerCustomName, customName) ->
+                    Component.translatable(
+                            "commands.name.set.failed.conflict.custom",
+                            playerProfileName,
+                            playerCustomName,
+                            customName));
+
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext buildContext) {
         dispatcher.register(Commands.literal("name")
                 .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
@@ -47,7 +64,7 @@ public class NameChangeCommand {
         );
     }
 
-    private static int set(ServerPlayer player, Component name, CommandContext<CommandSourceStack> context) {
+    private static int set(ServerPlayer player, Component name, CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         Component originalName = player.getName();
 
         NameChanger.LOGGER.debug("Changing player's name from {} to {}", originalName, name);
@@ -59,6 +76,22 @@ public class NameChangeCommand {
             NameChangerConfig config = Balm.config().getActiveConfig(NameChangerConfig.class);
 
             assert config != null;
+
+            if (config.forbidNameConflicts) {
+                if (conflict.type().equals(NameConflict.ConflictType.ORIGINAL_NAME)) {
+                    throw ERROR_NAME_CONFLICT_ORIGINAL.create(
+                            conflict.conflictingPlayer().getGameProfile().name(),
+                            getFeedbackDisplayName(conflict.conflictingPlayer(), false),
+                            getFeedbackDisplayName(conflict.conflictingPlayer(), true)
+                    );
+                } else {
+                    throw ERROR_NAME_CONFLICT_CUSTOM.create(
+                            getFeedbackDisplayName(conflict.conflictingPlayer(), false),
+                            getFeedbackDisplayName(conflict.conflictingPlayer(), true),
+                            name
+                    );
+                }
+            }
 
             if (config.nameConflictWarningEnabled) {
                 MutableComponent warning = conflict.type().equals(NameConflict.ConflictType.ORIGINAL_NAME)
