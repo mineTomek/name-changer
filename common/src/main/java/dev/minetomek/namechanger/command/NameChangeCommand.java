@@ -3,14 +3,24 @@ package dev.minetomek.namechanger.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import dev.minetomek.namechanger.NameChanger;
+import dev.minetomek.namechanger.NameChangerConfig;
+import dev.minetomek.namechanger.name.NameConflict;
+import dev.minetomek.namechanger.name.NameResolver;
+import net.blay09.mods.balm.Balm;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ComponentArgument;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permissions;
+
+import java.util.Objects;
+import java.util.Optional;
 
 public class NameChangeCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext buildContext) {
@@ -42,6 +52,31 @@ public class NameChangeCommand {
 
         NameChanger.LOGGER.debug("Changing player's name from {} to {}", originalName, name);
 
+        Optional<NameConflict> nameConflict = NameResolver.findFirstConflict(player, name);
+
+        if (nameConflict.isPresent()) {
+            NameConflict conflict = nameConflict.get();
+            NameChangerConfig config = Balm.config().getActiveConfig(NameChangerConfig.class);
+
+            assert config != null;
+
+            if (config.nameConflictWarningEnabled) {
+                MutableComponent warning = conflict.type().equals(NameConflict.ConflictType.ORIGINAL_NAME)
+                        ? Component.translatable("commands.name.set.warning.conflict.original",
+                        conflict.conflictingPlayer().getGameProfile().name(),
+                        getFeedbackDisplayName(conflict.conflictingPlayer(), false),
+                        getFeedbackDisplayName(conflict.conflictingPlayer(), true))
+                        : Component.translatable("commands.name.set.warning.conflict.custom",
+                        getFeedbackDisplayName(conflict.conflictingPlayer(), false),
+                        getFeedbackDisplayName(conflict.conflictingPlayer(), true),
+                        name);
+
+                context.getSource().sendSystemMessage(warning.withColor(
+                        Objects.requireNonNull(ChatFormatting.YELLOW.getColor())
+                ));
+            }
+        }
+
         player.setCustomName(name);
 
         NameChanger.LOGGER.debug("The player's name is now {} (custom name: {})", player.getName(), player.getCustomName());
@@ -62,5 +97,15 @@ public class NameChangeCommand {
         context.getSource().sendSuccess(() -> Component.translatable("commands.name.reset.success", originalName, player.getName()), true);
 
         return 1;
+    }
+
+    private static Component getFeedbackDisplayName(ServerPlayer player, boolean useCustomName) {
+        Component displayName = useCustomName
+                ? player.getDisplayName()
+                : Component.literal(player.getGameProfile().name());
+
+        return displayName.copy().withStyle((style) ->
+                style.withHoverEvent(new HoverEvent.ShowText(Component.literal(player.getScoreboardName())))
+        );
     }
 }
