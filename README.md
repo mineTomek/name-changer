@@ -1,5 +1,7 @@
 # Name Changer
 
+[![build](https://github.com/mineTomek/name-changer/actions/workflows/build.yml/badge.svg)](https://github.com/mineTomek/name-changer/actions/workflows/build.yml)
+
 A mod for changing a player’s name. Designed to replace the player’s name consistently across the game.
 
 Useful for roleplay servers, content creation, screenshots, or simply using a different display name without changing your account username.
