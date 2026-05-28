@@ -43,6 +43,15 @@ The `/name` command is used to set, reset, or inspect player names. It requires 
 
 Custom names are stored per-world and persist between reloads.
 
+### Config
+
+The mod currently has two config options:
+
+- **Name Conflict Warning** adds a warning when setting a name if it conflicts with other players' original or custom names
+- **Forbid Name Conflicts** prevents setting a name if it would cause conflicts with other players' original or custom names
+
+The config is available in the `namechanger-common.toml` file in the regular `./minecraft/config` directory and also using config mods like [Cloth Config](https://modrinth.com/mod/cloth-config) on Fabric and natively on NeoForge.
+
 ## Names
 
 The custom name entered in the `/name set` command is a text component. You can read more about them on the [Text Component](https://minecraft.wiki/w/Text_component_format#Java_Edition) page on the Minecraft Wiki.
