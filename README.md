@@ -12,9 +12,11 @@ Available on [Modrinth](https://modrinth.com/mod/namechanger) for NeoForge and F
 
 ## Features
 
+### Name Changing
+
 The primary feature of this mod is obviously changing the player's name. Here’s every place this affects:
 
-### UI & Display
+#### UI & Display
 - Chat name labels
 - Nameplates above players
 - Player list (under `Tab`)
@@ -22,7 +24,7 @@ The primary feature of this mod is obviously changing the player's name. Here’
 - Scoreboard sidebar display
 - MOTD for LAN worlds
 
-### Commands & System Integration
+#### Commands & System Integration
 - Entity selection in commands
   - Works with both suggestions and execution
   - Original names still work
@@ -31,7 +33,9 @@ The primary feature of this mod is obviously changing the player's name. Here’
   - Advancements
   - Join/Leave
 
-On top of that there's the `/name` command for changing the name, which requires operator permissions. It has two subcommands:
+### Name Command
+
+The `/name` command is used to set, reset, or inspect player names. It requires operator permissions and has two subcommands:
 
 - `/name set <target> <name>` sets the name of the target player
 - `/name reset [<target>]` resets the name of the target player (or self if target is omitted) to what it was originally
