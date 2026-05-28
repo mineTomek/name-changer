@@ -69,46 +69,7 @@ public class NameChangeCommand {
 
         NameChanger.LOGGER.debug("Changing player's name from {} to {}", originalName, name);
 
-        Optional<NameConflict> nameConflict = NameResolver.findFirstConflict(player, name);
-
-        if (nameConflict.isPresent()) {
-            NameConflict conflict = nameConflict.get();
-            NameChangerConfig config = Balm.config().getActiveConfig(NameChangerConfig.class);
-
-            assert config != null;
-
-            if (config.forbidNameConflicts) {
-                if (conflict.type().equals(NameConflict.ConflictType.ORIGINAL_NAME)) {
-                    throw ERROR_NAME_CONFLICT_ORIGINAL.create(
-                            conflict.conflictingPlayer().getGameProfile().name(),
-                            getFeedbackDisplayName(conflict.conflictingPlayer(), false),
-                            getFeedbackDisplayName(conflict.conflictingPlayer(), true)
-                    );
-                } else {
-                    throw ERROR_NAME_CONFLICT_CUSTOM.create(
-                            getFeedbackDisplayName(conflict.conflictingPlayer(), false),
-                            getFeedbackDisplayName(conflict.conflictingPlayer(), true),
-                            name
-                    );
-                }
-            }
-
-            if (config.nameConflictWarningEnabled) {
-                MutableComponent warning = conflict.type().equals(NameConflict.ConflictType.ORIGINAL_NAME)
-                        ? Component.translatable("commands.name.set.warning.conflict.original",
-                        conflict.conflictingPlayer().getGameProfile().name(),
-                        getFeedbackDisplayName(conflict.conflictingPlayer(), false),
-                        getFeedbackDisplayName(conflict.conflictingPlayer(), true))
-                        : Component.translatable("commands.name.set.warning.conflict.custom",
-                        getFeedbackDisplayName(conflict.conflictingPlayer(), false),
-                        getFeedbackDisplayName(conflict.conflictingPlayer(), true),
-                        name);
-
-                context.getSource().sendSystemMessage(warning.withColor(
-                        Objects.requireNonNull(ChatFormatting.YELLOW.getColor())
-                ));
-            }
-        }
+        handleNameConflicts(player, name, context);
 
         player.setCustomName(name);
 
@@ -119,6 +80,51 @@ public class NameChangeCommand {
         context.getSource().sendSuccess(() -> Component.translatable("commands.name.set.success", originalName, player.getName()), true);
 
         return 1;
+    }
+
+    private static void handleNameConflicts(ServerPlayer player, Component name, CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Optional<NameConflict> nameConflict = NameResolver.findFirstConflict(player, name);
+
+        if (nameConflict.isEmpty()) {
+            return;
+        }
+        
+        NameConflict conflict = nameConflict.get();
+        NameChangerConfig config = Balm.config().getActiveConfig(NameChangerConfig.class);
+
+        assert config != null;
+
+        if (config.forbidNameConflicts) {
+            if (conflict.type().equals(NameConflict.ConflictType.ORIGINAL_NAME)) {
+                throw ERROR_NAME_CONFLICT_ORIGINAL.create(
+                        conflict.conflictingPlayer().getGameProfile().name(),
+                        getFeedbackDisplayName(conflict.conflictingPlayer(), false),
+                        getFeedbackDisplayName(conflict.conflictingPlayer(), true)
+                );
+            } else {
+                throw ERROR_NAME_CONFLICT_CUSTOM.create(
+                        getFeedbackDisplayName(conflict.conflictingPlayer(), false),
+                        getFeedbackDisplayName(conflict.conflictingPlayer(), true),
+                        name
+                );
+            }
+        }
+
+        if (config.nameConflictWarningEnabled) {
+            MutableComponent warning = conflict.type().equals(NameConflict.ConflictType.ORIGINAL_NAME)
+                    ? Component.translatable("commands.name.set.warning.conflict.original",
+                    conflict.conflictingPlayer().getGameProfile().name(),
+                    getFeedbackDisplayName(conflict.conflictingPlayer(), false),
+                    getFeedbackDisplayName(conflict.conflictingPlayer(), true))
+                    : Component.translatable("commands.name.set.warning.conflict.custom",
+                    getFeedbackDisplayName(conflict.conflictingPlayer(), false),
+                    getFeedbackDisplayName(conflict.conflictingPlayer(), true),
+                    name);
+
+            context.getSource().sendSystemMessage(warning.withColor(
+                    Objects.requireNonNull(ChatFormatting.YELLOW.getColor())
+            ));
+        }
     }
 
     private static int reset(ServerPlayer player, CommandContext<CommandSourceStack> context) {
