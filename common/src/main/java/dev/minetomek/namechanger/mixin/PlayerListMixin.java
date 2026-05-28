@@ -1,5 +1,6 @@
 package dev.minetomek.namechanger.mixin;
 
+import dev.minetomek.namechanger.name.NameResolver;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import org.jspecify.annotations.Nullable;
@@ -29,20 +30,6 @@ public abstract class PlayerListMixin {
 
     @Overwrite
     public @Nullable ServerPlayer getPlayerByName(final String name) {
-        // Match custom name first
-        for (ServerPlayer serverPlayer : players) {
-            if (serverPlayer.getName().getString().equalsIgnoreCase(name)) {
-                return serverPlayer;
-            }
-        }
-
-        // Then try finding by original name
-        for (ServerPlayer serverPlayer : players) {
-            if (serverPlayer.getGameProfile().name().equalsIgnoreCase(name)) {
-                return serverPlayer;
-            }
-        }
-
-        return null;
+        return NameResolver.resolvePlayer(name, players).orElse(null);
     }
 }

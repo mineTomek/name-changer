@@ -3,6 +3,7 @@ package dev.minetomek.namechanger;
 import com.mojang.logging.LogUtils;
 import dev.minetomek.namechanger.command.NameChangeCommand;
 import net.blay09.mods.balm.commands.BalmCommands;
+import net.blay09.mods.balm.platform.config.BalmConfig;
 import net.blay09.mods.balm.platform.event.callback.ServerPlayerCallback;
 import net.blay09.mods.balm.platform.module.BalmModule;
 import net.minecraft.commands.CommandBuildContext;
@@ -33,6 +34,11 @@ public class NameChanger implements BalmModule {
     public void registerCommands(@NonNull BalmCommands commands) {
         CommandBuildContext context = Commands.createValidationContext(VanillaRegistries.createLookup());
         commands.register(dispatcher -> NameChangeCommand.register(dispatcher, context));
+    }
+
+    @Override
+    public void registerConfig(BalmConfig config) {
+        config.registerConfig(NameChangerConfig.class);
     }
 
     public static void handleCopyFromEvent(@NonNull ServerPlayer oldPlayer, @NonNull ServerPlayer newPlayer) {

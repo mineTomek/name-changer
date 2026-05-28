@@ -1,4 +1,14 @@
 {
   "commands.name.set.success": "Changed %s's name to %s",
-  "commands.name.reset.success": "Reset %s's name to %s"
+  "commands.name.set.warning.conflict.original": "Warning: %s is the original username of %s (%s).",
+  "commands.name.set.warning.conflict.custom": "Warning: %s (%s) already uses %s as their custom name.",
+  "commands.name.set.failed.conflict.original": "Cannot set name: %s is the original username of %s (%s).",
+  "commands.name.set.failed.conflict.custom": "Cannot set name: %s (%s) already uses %s as their custom name.",
+  "commands.name.reset.success": "Reset %s's name to %s",
+
+  "namechanger.configuration.title": "Name Changer Config",
+  "namechanger.configuration.nameConflictWarningEnabled": "Name Conflict Warning",
+  "namechanger.configuration.nameConflictWarningEnabled.tooltip": "Warns when a custom name causes a conflict with other players",
+  "namechanger.configuration.forbidNameConflicts": "Forbid Name Conflicts",
+  "namechanger.configuration.forbidNameConflicts.tooltip": "Disallows setting a custom name if it causes a conflict with other players"
 }
